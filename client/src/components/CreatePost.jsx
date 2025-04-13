@@ -10,7 +10,7 @@ function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/api/posts', { title, content });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/posts`, { title, content });
       navigate('/');
     } catch (error) {
       console.error('Error creating post:', error);
