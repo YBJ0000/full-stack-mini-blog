@@ -19,14 +19,14 @@ function PostDetail() {
     fetchPost();
   }, [id]);
 
-  if (!post) return <div>加载中...</div>;
+  if (!post) return <div>Loading...</div>;
 
   return (
     <div>
-      <Link to="/">返回首页</Link>
+      <Link to="/">Back</Link>
       <h1>{post.title}</h1>
       <p>{post.content}</p>
-      <p>发布时间: {new Date(post.created_at).toLocaleDateString()}</p>
+      <p>Posted time: {new Date(post.created_at).toLocaleDateString()}</p>
     </div>
   );
 }

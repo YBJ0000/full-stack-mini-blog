@@ -19,10 +19,10 @@ function CreatePost() {
 
   return (
     <div>
-      <h1>创建新文章</h1>
+      <h1>Create New Blog</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>标题：</label>
+          <label>Title: </label>
           <input
             type="text"
             value={title}
@@ -31,14 +31,14 @@ function CreatePost() {
           />
         </div>
         <div>
-          <label>内容：</label>
+          <label>Content: </label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
           />
         </div>
-        <button type="submit">发布</button>
+        <button type="submit">Submit</button>
       </form>
     </div>
   );

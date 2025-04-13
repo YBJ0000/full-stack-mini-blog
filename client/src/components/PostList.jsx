@@ -20,15 +20,15 @@ function PostList() {
 
   return (
     <div>
-      <h1>博客文章列表</h1>
-      <Link to="/new">创建新文章</Link>
+      <h1>Blog List</h1>
+      <Link to="/new">Create New Blog</Link>
       <div>
         {posts.map(post => (
           <div key={post.id}>
             <h2>
               <Link to={`/post/${post.id}`}>{post.title}</Link>
             </h2>
-            <p>发布时间: {new Date(post.created_at).toLocaleDateString()}</p>
+            <p>Posted time: {new Date(post.created_at).toLocaleDateString()}</p>
           </div>
         ))}
       </div>
