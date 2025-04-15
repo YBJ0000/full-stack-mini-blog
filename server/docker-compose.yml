@@ -11,9 +11,7 @@ services:
     depends_on:
       - redis
     restart: always
-    command: >
-      sh -c "npx prisma generate
-             && npm start"
+    command: sh -c "npx prisma generate && npm start"
 
   redis:
     image: redis:alpine
