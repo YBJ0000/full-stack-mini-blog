@@ -20,17 +20,19 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e  # 🚨 一旦命令失败立即退出
+
             cd ~/full-stack-mini-blog/server
             git pull origin main
             echo "✅ Pulled latest code"
 
             echo "🛠️ Shutting down old containers..."
-            docker compose down
+            sudo docker compose down || true
 
             echo "🧹 Pruning old images..."
-            docker image prune -a -f
+            sudo docker image prune -a -f || true
 
             echo "🚀 Rebuilding and starting new containers..."
-            docker compose up -d --build --force-recreate
+            sudo docker compose up -d --build --force-recreate
 
-            echo "✅ Done!"
+            echo "✅ Deployment complete!"
