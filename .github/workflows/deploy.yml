@@ -1,0 +1,33 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH and Deploy via docker-compose
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/mini-blog/server
+            git pull origin main
+            echo "✅ Pulled latest code"
+
+            echo "🛠️ Shutting down old containers..."
+            docker compose down
+
+            echo "🚀 Rebuilding and starting new containers..."
+            docker compose up -d --build
+
+            echo "✅ Done!"

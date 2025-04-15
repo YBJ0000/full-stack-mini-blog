@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+const redisClient = require('./redis');
 require('dotenv').config();
 
 const app = express();
@@ -24,10 +25,47 @@ app.use(cors());
 app.use(express.json());
 
 // 获取所有文章
+// 修改获取所有文章的接口，添加 Redis 缓存
 app.get('/api/posts', async (req, res) => {
   try {
+    // 尝试从 Redis 获取缓存
+    const cachedPosts = await redisClient.get('all_posts');
+    if (cachedPosts) {
+      console.log('🔥 Served from Redis cache');
+      return res.json(JSON.parse(cachedPosts));
+    }
+
+    // 如果没有缓存，从数据库获取
+    console.log('📡 Served from DB');
     const result = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+    
+    // 设置缓存，过期时间 1 分钟
+    await redisClient.setEx('all_posts', 60, JSON.stringify(result.rows));
+    
     res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 修改创建文章接口，添加清除缓存
+app.post('/api/posts', async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title and content are required' });
+    }
+
+    const result = await db.query(
+      'INSERT INTO posts (title, content) VALUES ($1, $2) RETURNING *',
+      [title, content]
+    );
+    
+    // 清除文章列表缓存
+    await redisClient.del('all_posts');
+    
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -44,26 +82,6 @@ app.get('/api/posts/:id', async (req, res) => {
     }
     
     res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 创建文章
-app.post('/api/posts', async (req, res) => {
-  try {
-    const { title, content } = req.body;
-    
-    if (!title || !content) {
-      return res.status(400).json({ error: 'Title and content are required' });
-    }
-
-    const result = await db.query(
-      'INSERT INTO posts (title, content) VALUES ($1, $2) RETURNING *',
-      [title, content]
-    );
-    
-    res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
