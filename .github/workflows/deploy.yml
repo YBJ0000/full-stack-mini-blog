@@ -20,14 +20,17 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/mini-blog/server
+            cd ~/full-stack-mini-blog/server
             git pull origin main
             echo "✅ Pulled latest code"
 
             echo "🛠️ Shutting down old containers..."
             docker compose down
 
+            echo "🧹 Pruning old images..."
+            docker image prune -a -f
+
             echo "🚀 Rebuilding and starting new containers..."
-            docker compose up -d --build
+            docker compose up -d --build --force-recreate
 
             echo "✅ Done!"
