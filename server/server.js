@@ -28,20 +28,16 @@ app.use(express.json());
 // 修改获取所有文章的接口，添加 Redis 缓存
 app.get('/api/posts', async (req, res) => {
   try {
-    // 尝试从 Redis 获取缓存
     const cachedPosts = await redisClient.get('all_posts');
     if (cachedPosts) {
-      console.log('🔥 Served from Redis cache');
+      console.log(`🔥 Served from Redis cache at ${new Date().toISOString()}`);
       return res.json(JSON.parse(cachedPosts));
     }
 
-    // 如果没有缓存，从数据库获取
-    console.log('📡 Served from DB');
+    console.log(`📡 Served from DB at ${new Date().toISOString()}`);
     const result = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
     
-    // 设置缓存，过期时间 1 分钟
     await redisClient.setEx('all_posts', 60, JSON.stringify(result.rows));
-    
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
