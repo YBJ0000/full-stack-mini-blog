@@ -38,9 +38,9 @@ app.get('/api/posts', async (req, res) => {
     }
 
     console.log(`📡 Served from DB at ${new Date().toISOString()}`);
-    const posts = await prisma.post.findMany({
+    const posts = await prisma.posts.findMany({  // 改为 posts（复数）
       orderBy: {
-        createdAt: 'desc',
+        created_at: 'desc',  // 改为 created_at
       },
     });
     
@@ -51,7 +51,7 @@ app.get('/api/posts', async (req, res) => {
   }
 });
 
-// 修改创建文章接口，添加清除缓存
+// 修改创建文章接口
 app.post('/api/posts', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -60,7 +60,7 @@ app.post('/api/posts', async (req, res) => {
       return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    const post = await prisma.post.create({
+    const post = await prisma.posts.create({  // 改为 posts（复数）
       data: {
         title,
         content,
@@ -69,7 +69,6 @@ app.post('/api/posts', async (req, res) => {
     
     // 清除文章列表缓存
     await redisClient.del('all_posts');
-    
     res.status(201).json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -80,7 +79,7 @@ app.post('/api/posts', async (req, res) => {
 app.get('/api/posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await prisma.post.findUnique({
+    const post = await prisma.posts.findUnique({  // 改为 posts（复数）
       where: { id: parseInt(id) },
     });
     
