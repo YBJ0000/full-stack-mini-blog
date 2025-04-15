@@ -7,11 +7,9 @@ COPY prisma ./prisma/
 
 RUN npm install
 
-RUN npx prisma generate
-
 COPY . .
 
-RUN npm install && npx prisma generate
+RUN npx prisma generate
 
 EXPOSE 3000
 
