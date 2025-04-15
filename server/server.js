@@ -1,16 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./db');
+// const db = require('./db'); // 移除原有的 pg 数据库连接
 const redisClient = require('./redis');
 require('dotenv').config();
+const { PrismaClient } = require('@prisma/client'); // 导入 PrismaClient
+
+const prisma = new PrismaClient(); // 创建 PrismaClient 实例
 
 const app = express();
 
 // 测试数据库连接
 const testDbConnection = async () => {
   try {
-    const result = await db.query('SELECT NOW()');
-    console.log('数据库连接成功:', result.rows[0]);
+    const result = await prisma.$queryRaw`SELECT NOW()`;
+    console.log('数据库连接成功:', result);
   } catch (err) {
     console.error('数据库连接失败:', err);
     process.exit(1);  // 如果连接失败，终止程序
@@ -35,10 +38,14 @@ app.get('/api/posts', async (req, res) => {
     }
 
     console.log(`📡 Served from DB at ${new Date().toISOString()}`);
-    const result = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+    const posts = await prisma.post.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     
-    await redisClient.setEx('all_posts', 60, JSON.stringify(result.rows));
-    res.json(result.rows);
+    await redisClient.setEx('all_posts', 60, JSON.stringify(posts));
+    res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -53,15 +60,17 @@ app.post('/api/posts', async (req, res) => {
       return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    const result = await db.query(
-      'INSERT INTO posts (title, content) VALUES ($1, $2) RETURNING *',
-      [title, content]
-    );
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+      },
+    });
     
     // 清除文章列表缓存
     await redisClient.del('all_posts');
     
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -71,13 +80,15 @@ app.post('/api/posts', async (req, res) => {
 app.get('/api/posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await db.query('SELECT * FROM posts WHERE id = $1', [id]);
+    const post = await prisma.post.findUnique({
+      where: { id: parseInt(id) },
+    });
     
-    if (result.rows.length === 0) {
+    if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
     
-    res.json(result.rows[0]);
+    res.json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -86,7 +97,7 @@ app.get('/api/posts/:id', async (req, res) => {
 // 添加健康检查接口
 app.get('/health', async (req, res) => {
   try {
-    await db.query('SELECT NOW()');
+    await prisma.$queryRaw`SELECT NOW()`;
     res.status(200).json({ status: 'healthy', message: 'Service is running and database is connected' });
   } catch (err) {
     res.status(500).json({ status: 'unhealthy', message: 'Database connection failed' });
