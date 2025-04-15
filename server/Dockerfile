@@ -11,6 +11,8 @@ RUN npx prisma generate
 
 COPY . .
 
+RUN npm install && npx prisma generate
+
 EXPOSE 3000
 
 CMD ["npm", "start"]
