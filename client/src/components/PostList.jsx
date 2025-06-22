@@ -21,14 +21,15 @@ function PostList() {
   return (
     <div>
       <h1>Blog List</h1>
-      <Link to="/new">Create New Blog</Link>
       <div>
         {posts.map(post => (
           <div key={post.id}>
             <h2>
               <Link to={`/post/${post.id}`}>{post.title}</Link>
             </h2>
-            <p>Posted time: {new Date(post.created_at).toLocaleDateString()}</p>
+            <p>
+              Posted by: <strong>{post.author ? post.author.username : 'Anonymous'}</strong> on {new Date(post.created_at).toLocaleDateString()}
+            </p>
           </div>
         ))}
       </div>

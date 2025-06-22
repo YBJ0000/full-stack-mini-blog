@@ -26,7 +26,9 @@ function PostDetail() {
       <Link to="/">Back</Link>
       <h1>{post.title}</h1>
       <p>{post.content}</p>
-      <p>Posted time: {new Date(post.created_at).toLocaleDateString()}</p>
+      <p>
+        Posted by: <strong>{post.author ? post.author.username : 'Anonymous'}</strong> on {new Date(post.created_at).toLocaleDateString()}
+      </p>
     </div>
   );
 }
