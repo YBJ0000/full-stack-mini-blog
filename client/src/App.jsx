@@ -29,10 +29,10 @@ import Register from './components/Register';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#7c4dff',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#e040fb',
     },
   },
 });
