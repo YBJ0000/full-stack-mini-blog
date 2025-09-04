@@ -209,7 +209,7 @@ function PostList() {
                         textDecoration: 'none',
                         '&:hover': {
                           backgroundColor: 'primary.main',
-                          color: 'white'
+                          color: 'black'
                         }
                       }}
                     />
